@@ -38,14 +38,20 @@ services:
   # ...
   apisix-acme:
     image: apisix-acme:1.1.0
+    container_name: apisix-acme
     restart: always
     depends_on:
       - apisix
     environment:
-      - APISIX_HOST=http://apisix:9080
-      - APISIX_TOKEN=xxxxxxxxxxxxxxxxxxxxxxx
-      - SELF_APISIX_HOST=http://apisix-acme:80
-      - ACME_MAIL=test@qq.com
+      - APISIX_HOST=http://${APISIX_HOST}:${APISIX_PORT}
+      - APISIX_TOKEN=${APISIX_ADMIN_KEY}
+      - ACME_EMAIL=${ACME_EMAIL}
+      - ACME_PARAMS=${ACME_PARAMS}
+      - CERT_EXPIRE_DAYS=${ACME_CERT_EXPIRE_DAYS}
+      - Ali_Key=${ACME_ALI_KEY}
+      - Ali_Secret=${ACME_ALI_SECRET}
+    volumes:
+      - ./volumes/apisix-acme/certs:/app/certs
     networks:
       apisix:
 ```
