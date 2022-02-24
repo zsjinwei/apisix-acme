@@ -29,7 +29,7 @@ CA_BUYPASS="https://api.buypass.com/acme/directory"
 CA_BUYPASS_TEST="https://api.test4.buypass.no/acme/directory"
 
 CA_ZEROSSL="https://acme.zerossl.com/v2/DV90"
-_ZERO_EAB_ENDPOINT="http://api.zerossl.com/acme/eab-credentials-email"
+_ZERO_EAB_ENDPOINT="https://api.zerossl.com/acme/eab-credentials-email"
 
 CA_SSLCOM_RSA="https://acme.ssl.com/sslcom-dv-rsa"
 CA_SSLCOM_ECC="https://acme.ssl.com/sslcom-dv-ecc"
@@ -1053,9 +1053,9 @@ _sign() {
 
   _sign_openssl="${ACME_OPENSSL_BIN:-openssl} dgst -sign $keyfile "
 
-  if grep "BEGIN RSA PRIVATE KEY" "$keyfile" >/dev/null 2>&1 || grep "BEGIN PRIVATE KEY" "$keyfile" >/dev/null 2>&1; then
+  if _isRSA "$keyfile" >/dev/null 2>&1; then
     $_sign_openssl -$alg | _base64
-  elif grep "BEGIN EC PRIVATE KEY" "$keyfile" >/dev/null 2>&1; then
+  elif _isEcc "$keyfile" >/dev/null 2>&1; then
     if ! _signedECText="$($_sign_openssl -sha$__ECC_KEY_LEN | ${ACME_OPENSSL_BIN:-openssl} asn1parse -inform DER)"; then
       _err "Sign failed: $_sign_openssl"
       _err "Key file: $keyfile"
@@ -1253,7 +1253,8 @@ _createcsr() {
     domainlist="$(_idn "$domainlist")"
     _debug2 domainlist "$domainlist"
     alt="$(_getIdType "$domain" | _upper_case):$(_idn "$domain")"
-    for dl in $(echo "$domainlist" | tr "," ' '); do
+    for dl in $(echo "'$domainlist'" | sed "s/,/' '/g"); do
+      dl=$(echo "$dl" | tr -d "'")
       alt="$alt,$(_getIdType "$dl" | _upper_case):$dl"
     done
     #multi

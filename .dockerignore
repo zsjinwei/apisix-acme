@@ -3,4 +3,5 @@
 build.sh
 dev.sh
 Dockerfile
+node_modules
 README.md

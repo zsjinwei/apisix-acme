@@ -1,4 +1,4 @@
-image=apisix-acme:1.0.3
+image=apisix-acme:1.1.0
 
 input=$1
 
@@ -8,14 +8,9 @@ case $input in
     docker build --no-cache --rm --tag ${image} .
     ;;
   publish)
-    img_dockerhub=tmaize/${image}
+    img_dockerhub=zsjinwei/${image}
     docker tag ${image} ${img_dockerhub}
     docker push ${img_dockerhub}
-    ;;
-  publish2)
-    img_tencent=ccr.ccs.tencentyun.com/free-guangzhou/${image}
-    docker tag ${image} ${img_tencent}
-    docker push ${img_tencent}
     ;;
   *)
     echo "no input"

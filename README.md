@@ -37,7 +37,7 @@ chmod +x build.sh
 services:
   # ...
   apisix-acme:
-    image: apisix-acme:1.0.3
+    image: apisix-acme:1.1.0
     restart: always
     depends_on:
       - apisix
