@@ -7,6 +7,7 @@ const child_process = require('child_process');
 const config = require('./config');
 
 const apisix_host = config.APISIX_HOST;
+const apisix_api_version = config.APISIX_API_VERSION;
 const token = config.APISIX_TOKEN;
 const email = config.ACME_EMAIL;
 
@@ -36,6 +37,11 @@ async function listService() {
     },
     url: `${apisix_host}/apisix/admin/services`
   });
+
+  if(resp.data && resp.data.list) {
+    return resp.data.list;
+  }
+
   const nodes = resp.data.node.nodes || [];
   return nodes;
 }
@@ -48,6 +54,11 @@ async function listRoute() {
     },
     url: `${apisix_host}/apisix/admin/routes`
   });
+
+  if(resp.data && resp.data.list) {
+    return resp.data.list;
+  }
+
   const nodes = resp.data.node.nodes || [];
   return nodes;
 }
@@ -58,13 +69,19 @@ async function listSsl() {
     headers: {
       'X-API-KEY': token
     },
-    url: `${apisix_host}/apisix/admin/ssl`
+    url: apisix_api_version === 'v3'? `${apisix_host}/apisix/admin/ssls` : `${apisix_host}/apisix/admin/ssl`
   });
   const { data } = resp;
-  if (!data.count) {
+  if (!data.count && !data.total) {
     return [];
   }
-  const nodes = data.node.nodes;
+
+  let nodes = [];
+  if(data.list) {
+    nodes = data.list;
+  } else {
+    nodes = data.node.nodes;
+  }
   const list = nodes.map(node => {
     const item = node.value || {};
     return {
@@ -103,7 +120,7 @@ async function applySsl(sslInfo) {
     headers: {
       'X-API-KEY': token
     },
-    url: `${apisix_host}/apisix/admin/ssl/${id}`,
+    url: apisix_api_version === 'v3'? `${apisix_host}/apisix/admin/ssls/${id}` : `${apisix_host}/apisix/admin/ssl/${id}`,
     data: sslInfo
   });
 }
@@ -114,8 +131,8 @@ async function createSsl(domain, wildcard = false) {
     stdio: 'inherit'
   };
 
-  const ssl_key = path.join(__dirname, 'certs', `${domain}.key`);
-  const ssl_cer = path.join(__dirname, 'certs', `${domain}.cer`);
+  const ssl_key = path.join(__dirname, '../certs', `${domain}.key`);
+  const ssl_cer = path.join(__dirname, '../certs', `${domain}.cer`);
 
   let acmeCmd = `sh acme.sh --issue -m ${email} -d ${domain} ${
     wildcard ? `-d *.${domain}` : ''
