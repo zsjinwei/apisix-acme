@@ -150,9 +150,7 @@ async function createSsl(domain, wildcard = false) {
     snis,
     domain: domain,
     cert: fs.readFileSync(ssl_cer, 'utf8'),
-    key: fs.readFileSync(ssl_key, 'utf8'),
-    validity_start: moment.utc(start_time, 'MMM DD HH:mm:ss YYYY').unix(),
-    validity_end: moment.utc(end_time, 'MMM DD HH:mm:ss YYYY').unix()
+    key: fs.readFileSync(ssl_key, 'utf8')
   };
 }
 
